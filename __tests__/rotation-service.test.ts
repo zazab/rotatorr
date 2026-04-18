@@ -51,6 +51,10 @@ describe("getSeriesRotation", () => {
     expect(result.items[1]?.posterUrl).toBe(
       "/api/poster?path=%2Flibrary%2Fmetadata%2F2%2Fthumb%2F1"
     );
+    expect(getLastPlayedMapForSeries).toHaveBeenCalledWith([
+      { ratingKey: "show-2", title: "Played More Recently" },
+      { ratingKey: "show-1", title: "Never Played" }
+    ]);
   });
 
   it("keeps Plex results when Tautulli is unavailable", async () => {

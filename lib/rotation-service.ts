@@ -11,7 +11,12 @@ export async function getSeriesRotation() {
 
   if (seriesKeys.length > 0) {
     try {
-      lastPlayedMap = await getLastPlayedMapForSeries(seriesKeys);
+      lastPlayedMap = await getLastPlayedMapForSeries(
+        collection.items.map((item) => ({
+          ratingKey: item.ratingKey,
+          title: item.title
+        }))
+      );
     } catch (error) {
       warnings.push(
         error instanceof Error

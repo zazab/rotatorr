@@ -19,10 +19,11 @@ export type PlexCollectionItem = {
 
 export type TautulliHistoryEntry = {
   date: number | string;
-  grandparent_rating_key?: string;
-  parent_rating_key?: string;
-  rating_key?: string;
+  grandparent_rating_key?: string | number;
+  parent_rating_key?: string | number;
+  rating_key?: string | number;
   media_type?: string;
   title?: string;
   grandparent_title?: string;
+  original_title?: string;
 };

@@ -1,5 +1,10 @@
 import type { SeriesRotationItem, TautulliHistoryEntry } from "@/lib/types";
 
+type SeriesLookup = {
+  ratingKeys: Set<string>;
+  titleToRatingKey: Map<string, string>;
+};
+
 export function sortSeriesRotation(items: SeriesRotationItem[]) {
   return [...items].sort((left, right) => {
     if (left.playState !== right.playState) {
@@ -32,12 +37,12 @@ export function formatLastPlayedLabel(lastPlayedAt: string | null) {
 
 export function aggregateHistoryBySeries(
   entries: TautulliHistoryEntry[],
-  knownSeriesKeys: Set<string>
+  seriesLookup: SeriesLookup
 ) {
   const latestBySeries = new Map<string, string>();
 
   for (const entry of entries) {
-    const seriesKey = resolveSeriesKey(entry, knownSeriesKeys);
+    const seriesKey = resolveSeriesKey(entry, seriesLookup);
     if (!seriesKey) {
       continue;
     }
@@ -53,12 +58,54 @@ export function aggregateHistoryBySeries(
   return latestBySeries;
 }
 
-function resolveSeriesKey(entry: TautulliHistoryEntry, knownSeriesKeys: Set<string>) {
+export function buildSeriesLookup(
+  series: Array<{
+    ratingKey: string;
+    title: string;
+  }>
+) {
+  const ratingKeys = new Set<string>();
+  const titleToRatingKey = new Map<string, string>();
+
+  for (const item of series) {
+    const normalizedRatingKey = normalizeIdentifier(item.ratingKey);
+    const normalizedTitle = normalizeTitle(item.title);
+
+    if (!normalizedRatingKey || !normalizedTitle) {
+      continue;
+    }
+
+    ratingKeys.add(normalizedRatingKey);
+    titleToRatingKey.set(normalizedTitle, normalizedRatingKey);
+  }
+
+  return {
+    ratingKeys,
+    titleToRatingKey
+  };
+}
+
+function resolveSeriesKey(entry: TautulliHistoryEntry, seriesLookup: SeriesLookup) {
   const candidates = [entry.grandparent_rating_key, entry.parent_rating_key, entry.rating_key];
 
   for (const candidate of candidates) {
-    if (candidate && knownSeriesKeys.has(candidate)) {
-      return candidate;
+    const normalizedCandidate = normalizeIdentifier(candidate);
+    if (normalizedCandidate && seriesLookup.ratingKeys.has(normalizedCandidate)) {
+      return normalizedCandidate;
+    }
+  }
+
+  const titleCandidates = [entry.grandparent_title, entry.original_title, entry.title];
+
+  for (const candidate of titleCandidates) {
+    const normalizedTitle = normalizeTitle(candidate);
+    if (!normalizedTitle) {
+      continue;
+    }
+
+    const ratingKey = seriesLookup.titleToRatingKey.get(normalizedTitle);
+    if (ratingKey) {
+      return ratingKey;
     }
   }
 
@@ -68,4 +115,20 @@ function resolveSeriesKey(entry: TautulliHistoryEntry, knownSeriesKeys: Set<stri
 function normalizeHistoryDate(date: number | string) {
   const numeric = typeof date === "string" ? Number(date) : date;
   return new Date(numeric * 1000).toISOString();
+}
+
+function normalizeIdentifier(value: string | number | undefined) {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  return String(value);
+}
+
+function normalizeTitle(value: string | undefined) {
+  if (!value) {
+    return undefined;
+  }
+
+  return value.trim().toLocaleLowerCase();
 }

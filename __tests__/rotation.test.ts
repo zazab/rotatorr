@@ -1,4 +1,4 @@
-import { aggregateHistoryBySeries, sortSeriesRotation } from "@/lib/rotation";
+import { aggregateHistoryBySeries, buildSeriesLookup, sortSeriesRotation } from "@/lib/rotation";
 import type { SeriesRotationItem, TautulliHistoryEntry } from "@/lib/types";
 
 describe("sortSeriesRotation", () => {
@@ -68,7 +68,13 @@ describe("aggregateHistoryBySeries", () => {
       { grandparent_rating_key: "show-2", date: 120 }
     ];
 
-    const aggregated = aggregateHistoryBySeries(entries, new Set(["show-1", "show-2"]));
+    const aggregated = aggregateHistoryBySeries(
+      entries,
+      buildSeriesLookup([
+        { ratingKey: "show-1", title: "Show One" },
+        { ratingKey: "show-2", title: "Show Two" }
+      ])
+    );
 
     expect(aggregated.get("show-1")).toBe("1970-01-01T00:02:30.000Z");
     expect(aggregated.get("show-2")).toBe("1970-01-01T00:02:00.000Z");
@@ -77,8 +83,24 @@ describe("aggregateHistoryBySeries", () => {
   it("ignores entries that cannot be matched to a known series", () => {
     const entries: TautulliHistoryEntry[] = [{ grandparent_rating_key: "unknown", date: 100 }];
 
-    const aggregated = aggregateHistoryBySeries(entries, new Set(["show-1"]));
+    const aggregated = aggregateHistoryBySeries(
+      entries,
+      buildSeriesLookup([{ ratingKey: "show-1", title: "Show One" }])
+    );
 
     expect(aggregated.get("show-1")).toBeUndefined();
+  });
+
+  it("matches by title when rating keys do not line up", () => {
+    const entries: TautulliHistoryEntry[] = [
+      { grandparent_rating_key: "999", grandparent_title: "Show One", date: 150 }
+    ];
+
+    const aggregated = aggregateHistoryBySeries(
+      entries,
+      buildSeriesLookup([{ ratingKey: "show-1", title: "Show One" }])
+    );
+
+    expect(aggregated.get("show-1")).toBe("1970-01-01T00:02:30.000Z");
   });
 });
