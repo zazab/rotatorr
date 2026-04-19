@@ -10,15 +10,18 @@ export function RefreshButton() {
   return (
     <button
       type="button"
-      className="secondary-button"
+      className="secondary-button icon-button"
       onClick={() => {
         startTransition(() => {
           router.refresh();
         });
       }}
       disabled={isPending}
+      aria-label={isPending ? "Refreshing" : "Refresh"}
     >
-      {isPending ? "Refreshing..." : "Refresh"}
+      <span className={isPending ? "icon-button__icon icon-button__icon--spinning" : "icon-button__icon"} aria-hidden="true">
+        ↻
+      </span>
     </button>
   );
 }
