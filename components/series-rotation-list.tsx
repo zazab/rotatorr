@@ -41,13 +41,13 @@ export function SeriesRotationList({ items }: SeriesRotationListProps) {
           </div>
           <div className="series-content">
             <div className="series-heading">
-              <div>
+              <h2>{item.title}</h2>
+              <div className="series-meta">
                 <p className="series-state">
                   {item.playState === "never_played" ? "Never played" : "In rotation"}
                 </p>
-                <h2>{item.title}</h2>
+                <p className="series-last-played">{formatLastPlayedLabel(item.lastPlayedAt)}</p>
               </div>
-              <p className="series-last-played">{formatLastPlayedLabel(item.lastPlayedAt)}</p>
             </div>
             <dl className="series-metrics">
               <div>

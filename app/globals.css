@@ -12,6 +12,7 @@
   --error: #8c2f2f;
   --shadow: 0 24px 60px rgba(72, 49, 18, 0.12);
   --poster-bg: linear-gradient(180deg, #f0dfc3 0%, #d9c0a4 100%);
+  --series-poster-width: clamp(96px, 30vw, 108px);
   --font-sans: "Avenir Next", "Segoe UI", sans-serif;
 }
 
@@ -156,9 +157,8 @@ img {
 .series-card {
   position: relative;
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
   gap: 14px;
-  padding: 14px 52px 14px 14px;
+  padding: 14px 14px 16px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(60, 47, 28, 0.08);
@@ -179,15 +179,17 @@ img {
 }
 
 .series-poster-wrap {
-  width: 88px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--poster-bg);
 }
 
 .series-poster,
 .placeholder-poster {
-  width: 88px;
-  aspect-ratio: 2 / 3;
-  border-radius: 14px;
-  background: var(--poster-bg);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .placeholder-poster {
@@ -205,13 +207,13 @@ img {
 
 .series-heading {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .series-state {
-  margin: 0 0 4px;
+  margin: 0;
   color: var(--accent);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -222,11 +224,16 @@ img {
   padding-right: 32px;
 }
 
+.series-meta {
+  display: grid;
+  gap: 4px;
+}
+
 .series-last-played {
   margin: 0;
   text-align: left;
   color: var(--muted);
-  font-size: 0.94rem;
+  font-size: 0.88rem;
 }
 
 .series-metrics {
@@ -237,20 +244,20 @@ img {
 }
 
 .series-metrics div {
-  padding: 10px 12px;
-  border-radius: 14px;
+  padding: 8px 10px;
+  border-radius: 12px;
   background: #f7efe1;
 }
 
 .series-metrics dt {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
 }
 
 .series-metrics dd {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 0.96rem;
   font-weight: 700;
 }
 
@@ -315,9 +322,21 @@ img {
     padding: 22px;
     border-radius: 24px;
   }
+
+  .series-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .series-poster-wrap {
+    aspect-ratio: 1 / 1;
+  }
 }
 
 @media (min-width: 801px) {
+  :root {
+    --series-poster-width: 124px;
+  }
+
   .page-shell {
     padding: 48px 20px 64px;
   }
@@ -339,7 +358,7 @@ img {
   }
 
   .series-card {
-    grid-template-columns: 124px minmax(0, 1fr);
+    grid-template-columns: var(--series-poster-width) minmax(0, 1fr);
     gap: 18px;
     padding: 18px 60px 18px 18px;
     border-radius: 24px;
@@ -353,13 +372,15 @@ img {
   }
 
   .series-poster-wrap {
-    width: 124px;
+    width: var(--series-poster-width);
+    aspect-ratio: 2 / 3;
+    border-radius: 18px;
   }
 
   .series-poster,
   .placeholder-poster {
-    width: 124px;
-    border-radius: 18px;
+    width: var(--series-poster-width);
+    height: 100%;
   }
 
   .series-content {
@@ -367,15 +388,41 @@ img {
   }
 
   .series-heading {
+    gap: 10px;
+  }
+
+  .series-heading h2 {
+    font-size: 1.8rem;
+    padding-right: 0;
+  }
+
+  .series-meta {
     display: flex;
     gap: 16px;
     justify-content: space-between;
     align-items: flex-start;
   }
 
-  .series-heading h2 {
-    font-size: 1.8rem;
-    padding-right: 0;
+  .series-state {
+    font-size: 0.74rem;
+  }
+
+  .series-last-played {
+    font-size: 0.94rem;
+  }
+
+  .series-metrics div {
+    padding: 10px 12px;
+    border-radius: 14px;
+  }
+
+  .series-metrics dt {
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+  }
+
+  .series-metrics dd {
+    font-size: 1.05rem;
   }
 
   .series-last-played {
