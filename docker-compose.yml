@@ -1,8 +1,6 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  rotatorr:
+    image: zzazab/rotatorr:latest
     volumes:
       - ${CONFIG_FILE_PATH:-./config.local.json}:/config/config.json:ro
     ports:

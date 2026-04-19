@@ -16,8 +16,8 @@ export default async function Home() {
             <p className="eyebrow">TV Rotation</p>
             <h1>{collectionTitle ?? "Configured Plex Collection"}</h1>
             <p className="muted">
-              Never-played series stay at the top. Everything else is ordered by the oldest
-              last-played timestamp first.
+              Новые сверху, остальное отсортировано по дате последнего просмотра,
+              старые сверху.
             </p>
           </div>
           <div className="hero-actions">

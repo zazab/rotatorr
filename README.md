@@ -11,11 +11,11 @@ A private self-hosted Next.js app that reads one Plex collection, uses Tautulli 
 
 ## Docker Compose
 
-The app now reads its secrets from a JSON config file instead of environment variables.
+The published Docker image is `zzazab/rotatorr`, and the app reads its secrets from a JSON config file instead of environment variables.
 
 1. Copy `config.example.json` to `config.local.json`.
 2. Fill in the Plex and Tautulli values.
-3. Build and start the app with `docker-compose up --build`.
+3. Start the app with `docker-compose up -d`.
 4. Open `http://localhost:3000`.
 
 By default Compose mounts `./config.local.json` into the container at `/config/config.json`.
@@ -23,7 +23,7 @@ By default Compose mounts `./config.local.json` into the container at `/config/c
 If your config file lives elsewhere, point Compose at it with a non-secret path override:
 
 ```bash
-CONFIG_FILE_PATH=/mnt/apps/tv-series-rotation/config.json docker-compose up --build
+CONFIG_FILE_PATH=/mnt/apps/tv-series-rotation/config.json docker-compose up -d
 ```
 
 For TrueNAS, mount your external config file to `/config/config.json` in the container instead of storing secrets in environment variables.
@@ -67,6 +67,26 @@ To stop it, run `docker-compose down`.
 - `npm run dev` starts the local development server.
 - `npm run build` builds the production app.
 - `npm run test` runs the Vitest suite.
+
+## Running tests
+
+After `npm install`, run the automated checks from the project root:
+
+```bash
+npm run test
+```
+
+For an interactive watch mode while you are developing:
+
+```bash
+npm run test:watch
+```
+
+If you want to verify the full app before shipping changes, it is also useful to run:
+
+```bash
+npm run build
+```
 
 ## Manual Docker publish
 
