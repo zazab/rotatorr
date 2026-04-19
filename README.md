@@ -67,3 +67,22 @@ To stop it, run `docker-compose down`.
 - `npm run dev` starts the local development server.
 - `npm run build` builds the production app.
 - `npm run test` runs the Vitest suite.
+
+## Manual Docker publish
+
+GitHub Actions includes a manual workflow that can build and push this image to Docker Hub.
+
+1. Add the `DOCKERHUB_USERNAME` repository secret.
+2. Add the `DOCKERHUB_TOKEN` repository secret.
+3. Optionally add the `DOCKERHUB_REPOSITORY` repository variable if you want a repository name other than `<DOCKERHUB_USERNAME>/tv-series-rotation`.
+4. In GitHub, run the `Docker Publish` workflow from the Actions tab.
+5. Optionally provide a `version` input. If left blank, the workflow uses `package.json`'s version.
+
+The workflow always pushes:
+
+- `<image>:<version>`
+- `<image>:sha-<full-commit-sha>`
+
+It can also push `<image>:latest`, which is enabled by default in the manual trigger form.
+
+The Docker build receives `APP_VERSION` as a build argument, and the final image stores that value in OCI image metadata.

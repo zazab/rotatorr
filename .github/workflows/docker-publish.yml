@@ -1,0 +1,109 @@
+name: Docker Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Optional image version tag override
+        required: false
+        type: string
+      push_latest:
+        description: Also push the latest tag
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Resolve image metadata
+        id: meta
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          PUSH_LATEST: ${{ inputs.push_latest }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_REPOSITORY: ${{ vars.DOCKERHUB_REPOSITORY }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          VERSION="$INPUT_VERSION"
+          if [ -z "$VERSION" ]; then
+            VERSION="$(node -p "require('./package.json').version")"
+          fi
+
+          if [ -z "$DOCKERHUB_USERNAME" ]; then
+            echo "DOCKERHUB_USERNAME secret is required."
+            exit 1
+          fi
+
+          IMAGE_REPOSITORY="$DOCKERHUB_REPOSITORY"
+          if [ -z "$IMAGE_REPOSITORY" ]; then
+            IMAGE_REPOSITORY="$DOCKERHUB_USERNAME/$REPOSITORY_NAME"
+          fi
+
+          TAGS="$IMAGE_REPOSITORY:$VERSION"$'\n'"$IMAGE_REPOSITORY:sha-${GIT_SHA}"
+          if [ "$PUSH_LATEST" = "true" ]; then
+            TAGS="$TAGS"$'\n'"$IMAGE_REPOSITORY:latest"
+          fi
+
+          {
+            echo "version=$VERSION"
+            echo "image_repository=$IMAGE_REPOSITORY"
+            echo "tags<<EOF"
+            echo "$TAGS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Generate Docker metadata
+        id: docker_meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.meta.outputs.image_repository }}
+          tags: |
+            type=raw,value=${{ steps.meta.outputs.version }}
+            type=raw,value=sha-${{ github.sha }}
+            type=raw,value=latest,enable=${{ inputs.push_latest }}
+          labels: |
+            org.opencontainers.image.title=${{ github.event.repository.name }}
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ steps.meta.outputs.version }}

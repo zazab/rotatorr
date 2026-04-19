@@ -1,5 +1,6 @@
 .git
 .gitignore
+.github
 .idea
 .next
 .env
@@ -7,10 +8,10 @@
 .env.development.local
 .env.test.local
 .env.production.local
-config.local.json
 config.json
 coverage
 node_modules
 npm-debug.log*
 README.md
 READ.me
+config.local.json
