@@ -83,6 +83,49 @@ describe("getCollectionItems", () => {
     expect(result.title).toBe("Rotation");
   });
 
+  it("falls back to children response titles when metadata lookup rejects", async () => {
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          MediaContainer: {
+            title1: "TV Shows",
+            title2: "Rotation",
+            Metadata: []
+          }
+        })
+      } as Response)
+      .mockRejectedValueOnce(new Error("Plex metadata unavailable"));
+
+    const result = await getCollectionItems();
+
+    expect(result.title).toBe("Rotation");
+  });
+
+  it("falls back to children response titles when metadata response is malformed", async () => {
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          MediaContainer: {
+            title1: "TV Shows",
+            title2: "Rotation",
+            Metadata: []
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => {
+          throw new Error("Invalid JSON");
+        }
+      } as unknown as Response);
+
+    const result = await getCollectionItems();
+
+    expect(result.title).toBe("Rotation");
+  });
+
   it("falls back to collection metadata when the children response has no title", async () => {
     vi.spyOn(global, "fetch")
       .mockResolvedValueOnce({
