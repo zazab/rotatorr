@@ -69,18 +69,22 @@ export async function getCollectionItems() {
 }
 
 async function getCollectionTitle(ratingKey: string) {
-  const response = await fetch(toPlexUrl(`/library/metadata/${ratingKey}`), {
-    headers: plexHeaders(),
-    cache: "no-store"
-  });
+  try {
+    const response = await fetch(toPlexUrl(`/library/metadata/${ratingKey}`), {
+      headers: plexHeaders(),
+      cache: "no-store"
+    });
 
-  if (!response.ok) {
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = (await response.json()) as PlexMetadataResponse;
+
+    return payload.MediaContainer?.Metadata?.[0]?.title ?? null;
+  } catch {
     return null;
   }
-
-  const payload = (await response.json()) as PlexMetadataResponse;
-
-  return payload.MediaContainer?.Metadata?.[0]?.title ?? null;
 }
 
 export async function markSeriesUnwatched(ratingKey: string) {

@@ -11,7 +11,7 @@ A private self-hosted Next.js app that reads one Plex collection, uses Tautulli 
 
 ## Docker Compose
 
-The published Docker image is `zzazab/rotatorr`, and the app reads its secrets from a JSON config file instead of environment variables.
+The published Docker image is `zzazab/rotatorr`, and the app reads its secrets from a JSON config file instead of environment variables. The Compose file pins the image to the current app version by default so restarts do not silently pick up a new `latest` image.
 
 1. Copy `config.example.json` to `config.local.json`.
 2. Fill in the Plex and Tautulli values.
@@ -24,6 +24,12 @@ If your config file lives elsewhere, point Compose at it with a non-secret path 
 
 ```bash
 CONFIG_FILE_PATH=/mnt/apps/rotatorr/config.json docker-compose up -d
+```
+
+To intentionally upgrade or test another published image tag, set `ROTATORR_VERSION` when starting Compose:
+
+```bash
+ROTATORR_VERSION=0.1.4 docker-compose up -d
 ```
 
 For TrueNAS, mount your external config file to `/config/config.json` in the container instead of storing secrets in environment variables.
